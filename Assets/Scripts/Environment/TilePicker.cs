@@ -4,18 +4,18 @@ using System.Collections.Generic;
 
 public class TilePicker : MonoBehaviour {
 
-	public class TilePickerResponse {
-		Tile tile;
-	}
+	public BattleStateTracker battleStateTracker = new BattleStateTracker();
+	BattleOrder battleOrder = null;
 
 	List<Tile> tiles = null;
 	Tile hoverTile = null;
 	Tile response = null;
 	bool isDone = false;
+	bool canGoBack = false;
 
 	// Use this for initialization
 	void Start () {
-	
+		this.battleStateTracker.gameObject = this.gameObject;
 	}
 	
 	// Update is called once per frame
@@ -23,6 +23,7 @@ public class TilePicker : MonoBehaviour {
 	    if (tiles == null) {
 			return;
 		}
+		CheckReturned();
 		if (hoverTile != null) {
 			hoverTile.OnCursorOver();
 		}
@@ -31,10 +32,18 @@ public class TilePicker : MonoBehaviour {
 			hoverTile.SetSecondaryColor();
 		}
 		if (Input.GetButton("Fire1") && hoverTile != null) {
-			Debug.Log("tile picker done");
+			Debug.Log("tile picker done");			
+			CleanUp();
 			isDone = true;
-			response = hoverTile;
+			battleOrder.TargetTile = hoverTile;
+			
+			GameObject objToSpawn = new GameObject("OrderConfirm Action");
+			objToSpawn.AddComponent<OrderConfirmation>();
+			objToSpawn.GetComponent<OrderConfirmation>().battleStateTracker.previous = this.battleStateTracker;
+			objToSpawn.GetComponent<OrderConfirmation>().SetBattleOrder(battleOrder);
+			this.gameObject.SetActive(false);
 		}
+		CheckForBackButton();
 	}
 
 	Tile GetTileMouseIsOver() {	
@@ -43,7 +52,7 @@ public class TilePicker : MonoBehaviour {
 		RaycastHit hitInfo = new RaycastHit();
 		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo, layerMask)) {
 			Debug.Log("hit tile!");
-			Tile tile = hitInfo.collider.GetComponent <Tile> ();			
+			Tile tile = hitInfo.collider.GetComponent<Tile>();			
 			if(tile != null) {
 				hoverTile = tile;
 			} else {
@@ -54,6 +63,21 @@ public class TilePicker : MonoBehaviour {
 			return hoverTile;
 		}
 		return null;
+	}
+	
+	void CheckForBackButton() {
+		if (canGoBack && Input.GetButton("Fire2")) {
+			Debug.Log("backing out of tile picker");
+			CleanUp();
+			battleStateTracker.GoBackOneStep();
+		}
+		if (!Input.GetButton("Fire2")) {
+			canGoBack = true;
+		}
+	}
+
+	public void SetBattleOrder(BattleOrder battleOrder) {
+		this.battleOrder = battleOrder;
 	}
 
 	public void SetTiles(List<Tile> tiles) {
@@ -70,6 +94,14 @@ public class TilePicker : MonoBehaviour {
 	void UnlightTiles() {		
 		foreach (Tile tile in tiles) {
 			tile.OnCursorOff();
+		}
+	}
+
+	void CheckReturned() {
+		if (isDone) {
+			isDone = false;
+			canGoBack = false;
+			HighlightTiles();
 		}
 	}
 

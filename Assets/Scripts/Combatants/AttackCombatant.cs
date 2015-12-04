@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -17,6 +17,7 @@ public class AttackCombatant : MonoBehaviour {
 	TilePicker tilePicker = null;
 	Tile targetTile = null;
 	bool isDone = false;
+	BattleOrder order = new BattleOrder();
 
 	// Use this for initialization
 	void Start () {
@@ -31,7 +32,8 @@ public class AttackCombatant : MonoBehaviour {
 				if (tilePicker.IsDone()) {
 					targetTile = tilePicker.GetResponse();
 					if (targetTile != null) {
-						combatant.StartAttackAnimation(targetTile);
+						order.TargetTile = targetTile;
+						//combatant.StartAttackAnimation(targetTile);
 						state = State.ANIMATING;
 						tilePicker.CleanUp();
 						Destroy(tilePicker.gameObject);
@@ -41,6 +43,12 @@ public class AttackCombatant : MonoBehaviour {
 			CheckForBackButton();
 			break;
 		case State.ANIMATING:
+			GameObject objToSpawn = new GameObject("OrderConfirm Action");
+			objToSpawn.AddComponent<OrderConfirmation>();
+			objToSpawn.GetComponent<OrderConfirmation>().battleStateTracker.previous = this.battleStateTracker;
+			objToSpawn.GetComponent<OrderConfirmation>().SetBattleOrder(order);
+			this.gameObject.SetActive(false);
+
 			if (!combatant.animating) {
 				state = State.FINISHED;
 			}
@@ -69,6 +77,8 @@ public class AttackCombatant : MonoBehaviour {
 	
 	public void SetCombatant(Combatant combatant) {
 		this.combatant = combatant;
+		order.SourceCombatant = combatant;
+		order.Action = "attack";
 		MapManager map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
 		List<Tile> tiles = map.GetTilesInRange(combatant.GetTile(), 1, true);
 		tiles.Remove(combatant.GetTile());

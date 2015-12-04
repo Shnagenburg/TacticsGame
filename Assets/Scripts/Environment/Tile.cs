@@ -69,4 +69,11 @@ public class Tile : MonoBehaviour {
 	public void RemoveOccupant(Combatant combatant) {
 		this.occupants.Remove(combatant);
 	}
+
+	public Combatant GetOccupant() {
+		if (occupants.Count > 0) {
+			return occupants[0];
+		}
+		return null;
+	}
 }

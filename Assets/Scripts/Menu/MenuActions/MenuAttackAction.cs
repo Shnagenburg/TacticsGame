@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class MenuAttackAction : MenuAction {
 		
@@ -9,9 +10,22 @@ public class MenuAttackAction : MenuAction {
 	public override void Execute () {
 		parentMenu.gameObject.SetActive(false);
 		Debug.Log("attack! - " + combatant);
-		GameObject objToSpawn = new GameObject("Attack Combatant Action");
-		objToSpawn.AddComponent<AttackCombatant>();
-		objToSpawn.GetComponent<AttackCombatant>().SetCombatant(combatant);
-		objToSpawn.GetComponent<AttackCombatant>().battleStateTracker.previous = parentMenu.battleStateTracker;
+
+		BattleOrder order = new BattleOrder();
+		order.Action = "attack";
+		order.SourceCombatant = combatant;
+		
+		MapManager map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
+		List<Tile> tiles = map.GetTilesInRange(combatant.GetTile(), 1, true);
+		tiles.Remove(combatant.GetTile());
+		
+		GameObject objToSpawn = new GameObject("Tile Picker - Attack");
+		objToSpawn.AddComponent<TilePicker>();
+		TilePicker tilePicker = objToSpawn.GetComponent<TilePicker>();
+		tilePicker.SetTiles(tiles);
+		tilePicker.battleStateTracker.previous = this.parentMenu.battleStateTracker;
+		tilePicker.SetBattleOrder(order);
+
+		parentMenu.CleanUp();
 	}
 }

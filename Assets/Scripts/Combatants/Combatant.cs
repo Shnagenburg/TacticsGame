@@ -6,12 +6,14 @@ public class Combatant : MonoBehaviour {
 	
 	public bool animating = false;
 	public Animator animator;
+    public CombatantStats Stats { get; set; }
 	Quaternion originalFacing;
 	Tile currentTile;
 	MapManager map;
 
 	// Use this for initialization
 	void Start () {
+		this.Stats = new CombatantStats();
 		map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
 		animator = GetComponent<Animator>();
 	}

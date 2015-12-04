@@ -6,8 +6,10 @@ public class Menu : MonoBehaviour {
 
 	public BattleStateTracker battleStateTracker = new BattleStateTracker();
 	public MenuSelector menuSelector;
+	public bool IsDone {get; set;}
 	List<MenuItem> menuItems = new List<MenuItem>();
 	Combatant combatant;
+	CharacterPane leftPane = null;
 
 	// Use this for initialization
 	void Start () {
@@ -15,6 +17,7 @@ public class Menu : MonoBehaviour {
 		GameObject parentCanvas = GameObject.FindGameObjectWithTag("Canvas");
 		this.gameObject.transform.SetParent(parentCanvas.transform, false);
 		name = "Battle Menu Action";
+		IsDone = false;
 	}
 	
 	// Update is called once per frame
@@ -22,6 +25,19 @@ public class Menu : MonoBehaviour {
 	    if (menuItems.Count == 0) {
 			Default();
 		}
+		CheckReturned();
+	}
+	
+	void CheckReturned() {
+		if (IsDone) {
+			IsDone = false;
+			EnablePane();
+		}
+	}
+
+	void EnablePane() {
+		leftPane.gameObject.SetActive(true);
+		leftPane.Populate(combatant);
 	}
 
 	void Default() {
@@ -89,5 +105,15 @@ public class Menu : MonoBehaviour {
 	public void SetCombatant(Combatant combatant) {
 		Debug.Log("setting combant -" + combatant + "-");
 		this.combatant = combatant;
+		
+		leftPane = CharacterPane.FindLeftPane();
+		EnablePane();
+	}
+
+	public void CleanUp() {
+		if (leftPane != null) {
+			leftPane.gameObject.SetActive(false);
+		}
+		IsDone = true;
 	}
 }
