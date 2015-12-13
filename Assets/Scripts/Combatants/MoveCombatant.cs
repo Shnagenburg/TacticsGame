@@ -39,7 +39,7 @@ public class MoveCombatant : MonoBehaviour {
 					destinationTile = tilePicker.GetResponse();
 					if (destinationTile != null) {
 						MapManager map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
-						tilePath = map.GetShortestPath(combatant.GetTile(), destinationTile);
+						tilePath = map.GetShortestPath(combatant.Tile, destinationTile);
 						state = State.ANIMATING;
 						tilePicker.CleanUp();
 						Destroy(tilePicker.gameObject);
@@ -95,9 +95,9 @@ public class MoveCombatant : MonoBehaviour {
 
 	public void SetCombatant(Combatant combatant) {
 		this.combatant = combatant;
-		sourceTile = combatant.GetTile();
+		sourceTile = combatant.Tile;
 		MapManager map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
-		List<Tile> tiles = map.GetTilesInRange(combatant.GetTile(), 3, false);
+		List<Tile> tiles = map.GetTilesInRange(combatant.Tile, 3, false);
 		tiles = TileUtility.FilterOutOccupiedTiles(tiles);
 
 		

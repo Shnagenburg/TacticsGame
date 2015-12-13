@@ -16,8 +16,8 @@ public class MenuAttackAction : MenuAction {
 		order.SourceCombatant = combatant;
 		
 		MapManager map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
-		List<Tile> tiles = map.GetTilesInRange(combatant.GetTile(), 1, true);
-		tiles.Remove(combatant.GetTile());
+		List<Tile> tiles = map.GetTilesInRange(combatant.Tile, 1, true);
+		tiles.Remove(combatant.Tile);
 		
 		GameObject objToSpawn = new GameObject("Tile Picker - Attack");
 		objToSpawn.AddComponent<TilePicker>();

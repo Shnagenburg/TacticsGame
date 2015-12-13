@@ -21,7 +21,7 @@ public class CombatPane : MonoBehaviour {
 	public void Populate(BattleOrder order) {
 		this.order = order;
 		actionText.text = order.Action;
-		if (order.TargetTile.GetOccupant() != null) {
+		if (order.TargetTile.GetOccupant() != null && !order.TargetTile.GetOccupant().Stats.HasStatus("dead")) {
 			CombatantStats stats = order.SourceCombatant.Stats;
 			damageText.text = " " + stats.AttackPower + " Dmg \n " + stats.Accuracy + " % Acc";
 		} else {

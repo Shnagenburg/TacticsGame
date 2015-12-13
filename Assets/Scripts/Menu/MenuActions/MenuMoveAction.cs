@@ -17,7 +17,7 @@ public class MenuMoveAction : MenuAction {
 		order.SourceCombatant = combatant;
 			
 		MapManager map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
-		List<Tile> tiles = map.GetTilesInRange(combatant.GetTile(), 3, false);
+		List<Tile> tiles = map.GetTilesInRange(combatant.Tile, combatant.Stats.Movement, false);
 		tiles = TileUtility.FilterOutOccupiedTiles(tiles);		
 		
 		GameObject objToSpawn = new GameObject("Tile Picker - Move");

@@ -80,8 +80,8 @@ public class AttackCombatant : MonoBehaviour {
 		order.SourceCombatant = combatant;
 		order.Action = "attack";
 		MapManager map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
-		List<Tile> tiles = map.GetTilesInRange(combatant.GetTile(), 1, true);
-		tiles.Remove(combatant.GetTile());
+		List<Tile> tiles = map.GetTilesInRange(combatant.Tile, 1, true);
+		tiles.Remove(combatant.Tile);
 
 		GameObject objToSpawn;
 		objToSpawn = new GameObject("Tile Picker");

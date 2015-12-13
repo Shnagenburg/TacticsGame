@@ -32,17 +32,19 @@ public class FindShortestPath {
 			CalculateDistanceAndUpdatePath(currentTile, tileMap.RightNeighbor(currentTile), tileToDistance, tileToOptimalPrevious, moveThroughOccupied);
 		}
 		
-		Debug.Log("starting return path");
+		Debug.Log("starting return path - " + count);
+			
 		Tile returnTile = destinationTile;
 		shortestPath.Add(returnTile);
 		count = 0;
 		while (returnTile != sourceTile && count < 100) {
 			count++;
-			Debug.Log("finding last hop for " + returnTile);
+			Debug.Log("finding last hop for " + returnTile.TileData);
 			returnTile = tileToOptimalPrevious[returnTile];
-			Debug.Log("found " + returnTile);
+			Debug.Log("found " + returnTile.LocationString());
 			shortestPath.Add(returnTile);
 		}
+		Debug.Log("finish return path");
 		shortestPath.Reverse();
 		return shortestPath;
 	}
@@ -71,7 +73,7 @@ public class FindShortestPath {
 				minimum = entry;
 			}
 		}
-		Debug.Log("tile with min distance is " + minimum.Key);
+		Debug.Log("tile with min distance is " + minimum.Key.TileData);
 		return minimum.Key;
 	}
 

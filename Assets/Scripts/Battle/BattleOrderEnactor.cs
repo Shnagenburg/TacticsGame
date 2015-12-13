@@ -34,6 +34,11 @@ public class BattleOrderEnactor : MonoBehaviour {
 			timer += Time.deltaTime;
 			if (!battleOrder.SourceCombatant.animating && timer > maxTimer) {
 				state = State.FINISHED;
+				Combatant targetCombatant = battleOrder.TargetTile.GetOccupant();
+				if (targetCombatant != null) {
+					targetCombatant.DoneAnimating();
+					targetCombatant.CheckStatus();
+				}
 			}
 			break;
 		case State.MOVING:
@@ -47,6 +52,8 @@ public class BattleOrderEnactor : MonoBehaviour {
 
 	public void Enact(BattleOrder battleOrder) {
 		this.battleOrder = battleOrder;
+		Debug.Log("woah battle order!" + battleOrder);
+
 		if ("attack".Equals(battleOrder.Action)) {
 			battleOrder.SourceCombatant.StartAttackAnimation(battleOrder.TargetTile);
 			state = State.ATTACKING;
@@ -56,7 +63,9 @@ public class BattleOrderEnactor : MonoBehaviour {
 
 		} else if ("move".Equals(battleOrder.Action)) {
 			MapManager map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
-			tilePath = map.GetShortestPath(battleOrder.SourceCombatant.GetTile(), battleOrder.TargetTile);
+			// TODO clean up
+			tilePath = map.GetShortestPathThreadsafe(battleOrder.SourceCombatant.Tile.TileData, 
+			                                         battleOrder.TargetTile.TileData, TeamId.EnemyTeam).ConvertAll(t => t.Tile);
 			previousHop = tilePath[0];
 			nextHop = tilePath[0];
 			state = State.MOVING;
@@ -66,20 +75,20 @@ public class BattleOrderEnactor : MonoBehaviour {
 	void ApplyDamage() {
 		CombatantStats attackerStats = battleOrder.SourceCombatant.Stats;
 		Combatant targetCombatant = battleOrder.TargetTile.GetOccupant();
-		if (targetCombatant == null) {
+		if (targetCombatant == null || targetCombatant.Stats.HasStatus("dead")) {
 			maxTimer = 0.0f;
 			return;
 		}
 		int damage = attackerStats.AttackPower;
 		targetCombatant.Stats.CurrentHealth = targetCombatant.Stats.CurrentHealth - damage;
+
+		targetCombatant.StartFlinchingAnimation();
 		
 		GameObject objToSpawn = (GameObject)Instantiate(Resources.Load("DamageText"));
 		objToSpawn.SetActive(true);
 		objToSpawn.GetComponent<DamageNumber>().SetNumber(damage);
 		objToSpawn.transform.position = targetCombatant.transform.position + new Vector3(0, 1, 0);
 		maxTimer = objToSpawn.GetComponent<DamageNumber>().duration;
-
-
 	}
 
 	void WalkToDestination() {
@@ -95,9 +104,8 @@ public class BattleOrderEnactor : MonoBehaviour {
 			hopIndex = hopIndex + 1;
 			if (hopIndex >= tilePath.Count) {
 				state = State.FINISHED;
-				Tile sourceTile = combatant.GetTile();
 				nextHop.SetOccupant(combatant);
-				sourceTile.RemoveOccupant(combatant);
+				combatant.Tile.RemoveOccupant(combatant);
 				return;
 			}
 			nextHop = tilePath[hopIndex];

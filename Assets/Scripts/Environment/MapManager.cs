@@ -84,13 +84,25 @@ public class MapManager : MonoBehaviour {
 
 	public List<Tile> GetTilesInRange(Tile tile, int range, bool canMoveThroughOccupied) {
 		List<Tile> hoverTiles = FindTilesWithinRange.Find(tileMap, tile, range, 0, canMoveThroughOccupied);
-		Debug.Log(hoverTiles.Count + "!");
+		//Debug.Log(hoverTiles.Count + "!");
 		return hoverTiles;
 	}
 
 	public List<Tile> GetShortestPath(Tile source, Tile destination) {
 		List<Tile> hoverTiles = FindShortestPath.Find(tileMap, source, destination);
-		Debug.Log(hoverTiles.Count + "!");
+		//Debug.Log(hoverTiles.Count + "!");
 		return hoverTiles;
     }
+		
+	public List<TileData> GetShortestPathThreadsafe(TileData source, TileData destination) {
+		List<TileData> hoverTiles = FindShortestPathThreadsafe.Find(tileMap, source, destination);
+		//Debug.Log(hoverTiles.Count + "!");
+		return hoverTiles;
+	}
+
+	public List<TileData> GetShortestPathThreadsafe(TileData source, TileData destination, int blockMask) {
+		List<TileData> hoverTiles = FindShortestPathThreadsafe.Find(tileMap, source, destination, blockMask);
+		//Debug.Log(hoverTiles.Count + "!");
+		return hoverTiles;
+	}
 }

@@ -33,7 +33,12 @@ public class OrderConfirmation : MonoBehaviour {
             leftPane.gameObject.SetActive(true);
             rightPane.gameObject.SetActive(true);
             leftPane.Populate(order.SourceCombatant);
-            rightPane.Populate(order.TargetTile.GetOccupant());
+			if (order.TargetTile.GetOccupant() != null && order.TargetTile.GetOccupant().Stats.HasStatus("dead")
+			    && order.Action.Equals("attack")) {
+				rightPane.Populate(null);
+			} else {
+				rightPane.Populate(order.TargetTile.GetOccupant());
+			}
 
 			centerPane = CombatPane.FindCenterPane();
 			centerPane.gameObject.SetActive(true);

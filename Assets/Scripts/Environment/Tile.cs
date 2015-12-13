@@ -5,21 +5,22 @@ using System.Collections.Generic;
 
 public class Tile : MonoBehaviour {
 
-
+	public TileData TileData {get; set;}
 	public Material tileSelected;
 	public Material tileSecondary;
 	Material tileUnSelected;
 	Renderer renderer;
-	int column = -1;
-	int row = -1;
-	int movementCost = 1;
-	int height = 0;
+    
 	List<Combatant> occupants = new List<Combatant>();
 
 	// Use this for initialization
 	void Start () {
 		renderer = GetComponent<Renderer>();
 		tileUnSelected = renderer.material;
+		if (this.TileData == null) {
+		    this.TileData = new TileData();
+		    this.TileData.Tile = this;
+		}
 	}
 	
 	// Update is called once per frame
@@ -28,8 +29,12 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void SetColumnAndRow(int column, int row) {
-		this.column = column;
-		this.row = row;
+		if (this.TileData == null) {
+			this.TileData = new TileData();
+			this.TileData.Tile = this;
+        }
+        this.TileData.Column = column;
+		this.TileData.Row = row;
 	}
 
 	public void OnCursorOver() {
@@ -45,15 +50,15 @@ public class Tile : MonoBehaviour {
 	}
 
 	public int GetRow() {
-		return row;
+		return this.TileData.Row;
 	}
 
 	public int GetColumn() {
-		return column;
+		return this.TileData.Column;
 	}
 
 	public int GetMovementCost() {
-		return movementCost;
+		return this.TileData.MovementCost;
 	}
 
 	public bool IsOccupied() {
@@ -63,11 +68,13 @@ public class Tile : MonoBehaviour {
 	public void SetOccupant(Combatant combatant) {
 		this.occupants.Add(combatant);
 		combatant.transform.position = this.transform.position;
-		combatant.SetTile(this);
+		combatant.Tile  = this;
+		this.TileData.OccupiedTeam = combatant.TeamId;
 	}
 
 	public void RemoveOccupant(Combatant combatant) {
 		this.occupants.Remove(combatant);
+		this.TileData.OccupiedTeam = TeamId.NoOccupant;
 	}
 
 	public Combatant GetOccupant() {
@@ -75,5 +82,9 @@ public class Tile : MonoBehaviour {
 			return occupants[0];
 		}
 		return null;
+	}
+
+	public string LocationString() {
+		return "r:" + this.GetRow() + " c:" + this.GetColumn();
 	}
 }

@@ -6,6 +6,8 @@ public class TileMap {
 	
 	Tile [,] tileMap;
 	List<Tile> tileList;
+	TileData [,] TileDataMap { get; set; }
+	public List<TileData> TileDataList { get; set; }
 	int width;
 	int height;
 
@@ -14,6 +16,7 @@ public class TileMap {
 		this.width = width;
 		this.height = height;
 		BuildTileMap();
+		CopyTileIntoTileData();
 	}	
 	
 	void BuildTileMap() {
@@ -65,6 +68,16 @@ public class TileMap {
 		}
 	}
 
+	void CopyTileIntoTileData() {
+		this.TileDataMap = new TileData[width,height];
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				this.TileDataMap[i,j] = tileMap[i,j].TileData;
+			}
+		}
+		this.TileDataList = tileList.ConvertAll(t => t.TileData);
+	}
+
 	public Tile[,] GetMap() {
 		return tileMap;
 	}
@@ -109,5 +122,28 @@ public class TileMap {
 			return false;
 		}
 		return true;
+	}
+	
+	public TileData TopNeighbor(TileData sourceTile) {
+		return GetTileDataOrNull(sourceTile.Column, sourceTile.Row + 1);
+	}
+	
+	public TileData BottomNeighbor(TileData sourceTile) {
+		return GetTileDataOrNull(sourceTile.Column, sourceTile.Row - 1);
+	}
+	
+	public TileData LeftNeighbor(TileData sourceTile) {
+		return GetTileDataOrNull(sourceTile.Column - 1, sourceTile.Row);
+	}
+	
+	public TileData RightNeighbor(TileData sourceTile) {
+		return GetTileDataOrNull(sourceTile.Column + 1, sourceTile.Row);
+	}
+	
+	public TileData GetTileDataOrNull(int column, int row) {		
+		if (IsInBounds(column, row)) {
+			return this.TileDataMap[column, row];
+		}
+		return null;
 	}
 } 

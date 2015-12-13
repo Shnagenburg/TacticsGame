@@ -6,29 +6,23 @@ public class Combatant : MonoBehaviour {
 	
 	public bool animating = false;
 	public Animator animator;
-    public CombatantStats Stats { get; set; }
+	public Tile Tile { get; set; }
+	public CombatantStats Stats { get; set; }
+	public int TeamId { get; set; }
 	Quaternion originalFacing;
-	Tile currentTile;
 	MapManager map;
 
 	// Use this for initialization
 	void Start () {
 		this.Stats = new CombatantStats();
+		this.TeamId = 0;
 		map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
 		animator = GetComponent<Animator>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-	
-	}
 
-	public Tile GetTile() {
-		return currentTile;
-	}
-
-	public void SetTile(Tile tile) {
-		this.currentTile = tile;
 	}
 
 	public void StartAttackAnimation(Tile targetTile) {
@@ -37,10 +31,23 @@ public class Combatant : MonoBehaviour {
 		animating = true;
 		this.transform.LookAt(targetTile.transform);
 	}
+	
+	public void StartFlinchingAnimation() {
+		animator.SetBool("IsFlinching", true);
+		animating = true;
+	}
 
 	public void DoneAnimating() {
 		this.transform.rotation = originalFacing;
+		animator.SetBool("IsFlinching", false);
 		Debug.Log("done with attack");
 		animating = false;
+	}
+
+	public void CheckStatus() {
+		if (Stats.IsDead() && !Stats.HasStatus("dead")) {
+			Stats.ActiveEffects.Add(new StatusEffect("dead"));
+			animator.SetTrigger("Die");
+		}
 	}
 }
