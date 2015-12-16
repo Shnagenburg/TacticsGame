@@ -7,6 +7,8 @@ public class TilePicker : MonoBehaviour {
 	public BattleStateTracker battleStateTracker = new BattleStateTracker();
 	BattleOrder battleOrder = null;
 
+	ThreadedFindTiles calc = null;
+
 	List<Tile> tiles = null;
 	Tile hoverTile = null;
 	Tile response = null;
@@ -20,7 +22,11 @@ public class TilePicker : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	    if (tiles == null) {
+		if (calc != null && calc.IsDone) {
+			calc.JoinThread();
+			SetTiles(calc.TileResults.ConvertAll(t => t.Tile));
+		}
+		if (tiles == null) {
 			return;
 		}
 		CheckReturned();
@@ -80,6 +86,11 @@ public class TilePicker : MonoBehaviour {
 		this.battleOrder = battleOrder;
 	}
 
+	public void SetTileParamsMove(Combatant combatant) {
+		calc = new ThreadedFindTiles();
+		calc.StartThreadToFindTilesInRange(combatant, MapManager.FindMapManager());
+	}
+
 	public void SetTiles(List<Tile> tiles) {
 		this.tiles = tiles;
 		HighlightTiles();
@@ -114,6 +125,9 @@ public class TilePicker : MonoBehaviour {
 	}
 
 	public void CleanUp() {
+		if (calc != null) {
+		    calc.JoinThread();
+		}
 		UnlightTiles();
 	}
 }

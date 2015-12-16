@@ -68,7 +68,7 @@ public class Tile : MonoBehaviour {
 	public void SetOccupant(Combatant combatant) {
 		this.occupants.Add(combatant);
 		combatant.transform.position = this.transform.position;
-		combatant.Tile  = this;
+		combatant.Tile = this;
 		this.TileData.OccupiedTeam = combatant.TeamId;
 	}
 
@@ -78,6 +78,9 @@ public class Tile : MonoBehaviour {
 	}
 
 	public Combatant GetOccupant() {
+		if (occupants.Count > 1) {
+			Debug.LogError("ERROR multi occupied tile");
+		}
 		if (occupants.Count > 0) {
 			return occupants[0];
 		}

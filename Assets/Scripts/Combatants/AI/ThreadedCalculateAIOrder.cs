@@ -26,7 +26,6 @@ public class ThreadedCalculateAIOrder {
 
 	public void Calculate() {
 
-
 		List<Combatant> targets = BattleDriver.CurrentBattleDriver.Combatants;
 		targets = targets.Where(t => t.TeamId == TeamId.PlayerTeam).ToList();
 		targetToDistance = targets.ToDictionary(t => t, t => TilesAway(combatant, t));
@@ -61,5 +60,9 @@ public class ThreadedCalculateAIOrder {
 	int TilesAway(Combatant source, Combatant target) {
 		return Mathf.Abs(source.Tile.GetRow() - target.Tile.GetRow()) 
 			+ Mathf.Abs(source.Tile.GetColumn() - target.Tile.GetColumn());
+	}
+
+	public void JoinThread() {
+		thread.Join();
 	}
 }

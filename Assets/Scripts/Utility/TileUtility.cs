@@ -9,6 +9,11 @@ public class TileUtility {
 		return tiles;
 	}
 
+	static public List<TileData> FilterOutOccupiedTiles(List<TileData> tiles) {
+		tiles.RemoveAll((TileData obj) => obj.OccupiedTeam != TeamId.NoOccupant);
+		return tiles;
+	}
+
 	static public List<TileData> FilterOutOccupiedTiles(List<TileData> tiles, int teamId) {
 		if (teamId == TeamId.MOVE_THROUGH_NONE) {
 			foreach (TileData t in tiles) {

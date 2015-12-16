@@ -22,6 +22,7 @@ public class AIDirector : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 	    if (calc != null && calc.IsDone) {
+			calc.JoinThread();
 			Finish();
 		}
 	}

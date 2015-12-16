@@ -81,10 +81,20 @@ public class MapManager : MonoBehaviour {
 			}
 		}
 	}
-
+	
 	public List<Tile> GetTilesInRange(Tile tile, int range, bool canMoveThroughOccupied) {
 		List<Tile> hoverTiles = FindTilesWithinRange.Find(tileMap, tile, range, 0, canMoveThroughOccupied);
 		//Debug.Log(hoverTiles.Count + "!");
+		return hoverTiles;
+	}
+	
+	public List<TileData> GetTilesInRangeThreadsafe(TileData tile, int range) {
+		List<TileData> hoverTiles = FindTilesWithinRangeThreadsafe.Find(tileMap, tile, range, 0, TeamId.MOVE_THROUGH_NONE);
+		return hoverTiles;
+	}
+	
+	public List<TileData> GetTilesInRangeThreadsafe(TileData tile, int range, int moveThroughMask) {
+		List<TileData> hoverTiles = FindTilesWithinRangeThreadsafe.Find(tileMap, tile, range, 0, moveThroughMask);
 		return hoverTiles;
 	}
 
@@ -104,5 +114,9 @@ public class MapManager : MonoBehaviour {
 		List<TileData> hoverTiles = FindShortestPathThreadsafe.Find(tileMap, source, destination, blockMask);
 		//Debug.Log(hoverTiles.Count + "!");
 		return hoverTiles;
+	}
+
+	public static MapManager FindMapManager() {
+		return GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
 	}
 }

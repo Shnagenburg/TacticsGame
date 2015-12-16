@@ -76,9 +76,11 @@ public class BattleOrderEnactor : MonoBehaviour {
 		CombatantStats attackerStats = battleOrder.SourceCombatant.Stats;
 		Combatant targetCombatant = battleOrder.TargetTile.GetOccupant();
 		if (targetCombatant == null || targetCombatant.Stats.HasStatus("dead")) {
+			Debug.Log("targetCombatant " + targetCombatant + "!");
 			maxTimer = 0.0f;
 			return;
 		}
+		Debug.Log("dmg text");
 		int damage = attackerStats.AttackPower;
 		targetCombatant.Stats.CurrentHealth = targetCombatant.Stats.CurrentHealth - damage;
 
@@ -103,9 +105,13 @@ public class BattleOrderEnactor : MonoBehaviour {
 			int hopIndex = tilePath.IndexOf(nextHop);
 			hopIndex = hopIndex + 1;
 			if (hopIndex >= tilePath.Count) {
+				Debug.Log("done moving!");
 				state = State.FINISHED;
+				Tile sourceTile = combatant.Tile;
 				nextHop.SetOccupant(combatant);
-				combatant.Tile.RemoveOccupant(combatant);
+				sourceTile.RemoveOccupant(combatant);
+//				nextHop.SetOccupant(combatant);
+//				sourceTile.RemoveOccupant(combatant);
 				return;
 			}
 			nextHop = tilePath[hopIndex];

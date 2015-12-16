@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class FindShortestPathThreadsafe {
 
@@ -40,7 +41,12 @@ public class FindShortestPathThreadsafe {
 		while (returnTile != sourceTile && count < 100) {
 			count++;
 			Debug.Log("finding last hop for " + returnTile.ToString());
+			try {
 			returnTile = dto.TileToOptimalPrevious[returnTile];
+			} catch (Exception ex) {
+				Debug.LogError(ex);
+				Debug.LogError("oh shit error couldn't find " + returnTile.ToString());
+			}
 			Debug.Log("found " + returnTile);
 			shortestPath.Add(returnTile);
 		}
@@ -53,7 +59,7 @@ public class FindShortestPathThreadsafe {
 		if (neighbor == null) {
 			return;
 		}
-		if (neighbor.OccupiedTeam == dto.MoveThroughMask) {
+		if (neighbor.OccupiedTeam == dto.MoveThroughMask && neighbor != dto.Destination) {
 			return;
 		}
 		// TODO i dont understand why it cant be the destination tile
