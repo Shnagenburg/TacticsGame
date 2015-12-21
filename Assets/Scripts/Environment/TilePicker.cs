@@ -47,6 +47,7 @@ public class TilePicker : MonoBehaviour {
 			objToSpawn.AddComponent<OrderConfirmation>();
 			objToSpawn.GetComponent<OrderConfirmation>().battleStateTracker.previous = this.battleStateTracker;
 			objToSpawn.GetComponent<OrderConfirmation>().SetBattleOrder(battleOrder);
+
 			this.gameObject.SetActive(false);
 		}
 		CheckForBackButton();

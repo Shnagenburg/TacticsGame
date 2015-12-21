@@ -146,4 +146,26 @@ public class TileMap {
 		}
 		return null;
 	}
+
+	public List<TileData> GetNeighbors(TileData tileData) {
+		List<TileData> addToList = new List<TileData>();
+		TileData neighbor;
+		neighbor = TopNeighbor(tileData);
+		if (neighbor != null) { 
+			addToList.Add(neighbor);
+		}
+		neighbor = BottomNeighbor(tileData);
+		if (neighbor != null) { 
+			addToList.Add(neighbor);
+		}
+		neighbor = LeftNeighbor(tileData);
+		if (neighbor != null) { 
+			addToList.Add(neighbor);
+		}
+		neighbor = RightNeighbor(tileData);
+		if (neighbor != null) { 
+			addToList.Add(neighbor);
+		}
+		return addToList;
+	}
 } 

@@ -11,6 +11,9 @@ public class OrderConfirmation : MonoBehaviour {
 	CharacterPane leftPane = null;
 	CharacterPane rightPane = null;
 	CombatPane centerPane = null;
+	float timer = 0.0f;
+	const float MAX_TIME = 2.0f;
+	bool autoConfirm = false;
 
 
 	void Start () {
@@ -23,7 +26,7 @@ public class OrderConfirmation : MonoBehaviour {
 				confirmObject = child;
 			}
 		}
-		confirmObject.SetActive(true);
+		confirmObject.SetActive(!autoConfirm);
 	}
 
     void SetupCharacterPanes() {
@@ -47,13 +50,17 @@ public class OrderConfirmation : MonoBehaviour {
     }
 
 	void Update () {
-		if (canConfirm && Input.GetButton("Fire1")) {			
-			GameObject objToSpawn = new GameObject("BattleOrderEnactor Action");
-			objToSpawn.AddComponent<BattleOrderEnactor>();
-			objToSpawn.GetComponent<BattleOrderEnactor>().battleStateTracker.previous = this.battleStateTracker;
-			objToSpawn.GetComponent<BattleOrderEnactor>().Enact(order);
+		if (autoConfirm) {
+			timer += Time.deltaTime;
+			if (timer > MAX_TIME) {
+				CreateEnactor();
+				CleanUp();
+				return;
+			}
+		}
+		if (canConfirm && Input.GetButton("Fire1")) {	
+			CreateEnactor();
 			CleanUp();
-			this.gameObject.SetActive(false);
 		} else if (Input.GetButton("Fire2")) {
 			CleanUp();
 			battleStateTracker.GoBackOneStep();
@@ -65,14 +72,27 @@ public class OrderConfirmation : MonoBehaviour {
 	    
 	}
 
+	private void CreateEnactor() {
+		GameObject objToSpawn = new GameObject("BattleOrderEnactor Action");
+		objToSpawn.AddComponent<BattleOrderEnactor>();
+		objToSpawn.GetComponent<BattleOrderEnactor>().battleStateTracker.previous = this.battleStateTracker;
+		objToSpawn.GetComponent<BattleOrderEnactor>().Enact(order);
+	}
+	
 	public void SetBattleOrder(BattleOrder order) {
+		this.SetBattleOrder(order, false);
+	}
+
+	public void SetBattleOrder(BattleOrder order, bool autoConfirm) {
 		this.order = order;
 		order.TargetTile.OnCursorOver();
 
         SetupCharacterPanes();
+		this.autoConfirm = autoConfirm;
 	}
 
 	void CleanUp() {
+		timer = 0;
 		confirmObject.SetActive(false);
 		order.TargetTile.OnCursorOff();
         if (leftPane != null) {
@@ -84,5 +104,6 @@ public class OrderConfirmation : MonoBehaviour {
 		if (centerPane != null) {
 			centerPane.gameObject.SetActive(false);
 		}
+		this.gameObject.SetActive(false);
 	}
 }

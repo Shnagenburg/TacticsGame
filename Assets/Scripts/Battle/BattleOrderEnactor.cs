@@ -55,6 +55,7 @@ public class BattleOrderEnactor : MonoBehaviour {
 		Debug.Log("woah battle order!" + battleOrder);
 
 		if ("attack".Equals(battleOrder.Action)) {
+			battleOrder.SourceCombatant.Stats.TurnStats.ConsumeAttack();
 			battleOrder.SourceCombatant.StartAttackAnimation(battleOrder.TargetTile);
 			state = State.ATTACKING;
 
@@ -62,6 +63,7 @@ public class BattleOrderEnactor : MonoBehaviour {
 			ApplyDamage();
 
 		} else if ("move".Equals(battleOrder.Action)) {
+			battleOrder.SourceCombatant.Stats.TurnStats.ConsumeMovement();
 			MapManager map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
 			// TODO clean up
 			tilePath = map.GetShortestPathThreadsafe(battleOrder.SourceCombatant.Tile.TileData, 
@@ -69,6 +71,9 @@ public class BattleOrderEnactor : MonoBehaviour {
 			previousHop = tilePath[0];
 			nextHop = tilePath[0];
 			state = State.MOVING;
+		} else if ("endturn".Equals(battleOrder.Action)) {
+			battleOrder.SourceCombatant.Stats.TurnStats.EndTurn();
+			state = State.FINISHED;
 		}
 	}
 

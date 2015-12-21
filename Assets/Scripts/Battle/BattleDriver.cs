@@ -42,9 +42,11 @@ public class BattleDriver : MonoBehaviour {
 	void Update () {
 		Debug.Log("Top level battle driver");
 		CheckVictory();
-		if (nextTurn) {
+		Debug.Log("Active combatant has - " + activeCombatant.Stats.TurnStats.ToString());
+		if (!activeCombatant.Stats.TurnStats.CanDoSomething()) {
 			NextTurn();
-		}		
+			return;
+		}
 		if (activeCombatant.Stats.HasStatus("dead")) {
 			Debug.Log("combatant " + activeCombatant + " is ded! skipping turn...");
 			nextTurn = true;
@@ -52,9 +54,9 @@ public class BattleDriver : MonoBehaviour {
 		}
 
 		if (activeCombatant.TeamId == TeamId.PlayerTeam) {
-		GameObject objToSpawn = (GameObject)Instantiate(Resources.Load("Menu"));
-		objToSpawn.GetComponent<Menu>().SetCombatant(activeCombatant);
-		objToSpawn.GetComponent<Menu>().battleStateTracker.previous = this.battleStateTracker;
+			GameObject objToSpawn = (GameObject)Instantiate(Resources.Load("Menu"));
+			objToSpawn.GetComponent<Menu>().SetCombatant(activeCombatant);
+			objToSpawn.GetComponent<Menu>().battleStateTracker.previous = this.battleStateTracker;
 		} else {
 			GameObject objToSpawn = new GameObject("AI Director");
 			objToSpawn.AddComponent<AIDirector>();
@@ -62,7 +64,6 @@ public class BattleDriver : MonoBehaviour {
 			objToSpawn.GetComponent<AIDirector>().battleStateTracker.previous = this.battleStateTracker;
 
 		}
-		nextTurn = true;
 		this.gameObject.SetActive(false);
 	}
 
@@ -76,6 +77,7 @@ public class BattleDriver : MonoBehaviour {
 			activeCombatant = combatants[i];
 		}
 		Debug.Log("now turn of - " + activeCombatant);
+		activeCombatant.Stats.TurnStats.Reset(activeCombatant.Stats);
 		nextTurn = false;
 	}
 

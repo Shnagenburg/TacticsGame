@@ -9,6 +9,10 @@ public class Menu : MonoBehaviour {
 	public bool IsDone {get; set;}
 	List<MenuItem> menuItems = new List<MenuItem>();
 	Combatant combatant;
+	public Combatant Combatant {
+		get {return combatant;} 
+		set {combatant = value;}
+	}
 	CharacterPane leftPane = null;
 
 	// Use this for initialization
@@ -47,36 +51,42 @@ public class Menu : MonoBehaviour {
 		GameObject menuItemObject;
 		MenuItem menuItem;
 		//MenuAction menuAction;
-		MenuAttackAction attackAction = new MenuAttackAction();
-		attackAction.parentMenu = this;
-		attackAction.combatant = combatant;
+		if (combatant.Stats.TurnStats.CanAttack()) {
 
-		menuItemObject = (GameObject)Instantiate(Resources.Load("MenuItem"));
-		menuItemObject.transform.parent = this.gameObject.transform;
-		menuItem = menuItemObject.GetComponent<MenuItem>();
-		menuItem.SetText("Attack");
-		menuItem.name = menuItem.menuItemText.text;
-		menuItem.transform.localRotation = Quaternion.identity;
-		menuItem.transform.localPosition = Vector3.zero;
-		menuItem.transform.localScale = Vector3.one;
-		menuItem.SetMenuAction(attackAction);
-		menuItems.Add(menuItem);
-		
-		//menuAction = new MenuMoveAction();
-		MenuMoveAction moveAction = new MenuMoveAction();
-		moveAction.SetMenu(this);
-		moveAction.combatant = combatant;
+			MenuAttackAction attackAction = new MenuAttackAction();
+			attackAction.parentMenu = this;
+			attackAction.combatant = combatant;
 
-		menuItemObject = (GameObject)Instantiate(Resources.Load("MenuItem"));
-		menuItemObject.transform.parent = this.gameObject.transform;
-		menuItem = menuItemObject.GetComponent<MenuItem>();
-		menuItem.SetText("Move");
-		menuItem.name = menuItem.menuItemText.text;
-		menuItem.transform.localRotation = Quaternion.identity;
-		menuItem.transform.localPosition = Vector3.zero;
-		menuItem.transform.localScale = Vector3.one;
-		menuItem.SetMenuAction(moveAction);
-		menuItems.Add(menuItem);
+			menuItemObject = (GameObject)Instantiate(Resources.Load("MenuItem"));
+			menuItemObject.transform.parent = this.gameObject.transform;
+			menuItem = menuItemObject.GetComponent<MenuItem>();
+			menuItem.SetText("Attack");
+			menuItem.name = menuItem.menuItemText.text;
+			menuItem.transform.localRotation = Quaternion.identity;
+			menuItem.transform.localPosition = Vector3.zero;
+			menuItem.transform.localScale = Vector3.one;
+			menuItem.SetMenuAction(attackAction);
+			menuItems.Add(menuItem);
+			
+		}
+
+		if (combatant.Stats.TurnStats.CanMove()) {
+			//menuAction = new MenuMoveAction();
+			MenuMoveAction moveAction = new MenuMoveAction();
+			moveAction.SetMenu(this);
+			moveAction.combatant = combatant;
+
+			menuItemObject = (GameObject)Instantiate(Resources.Load("MenuItem"));
+			menuItemObject.transform.parent = this.gameObject.transform;
+			menuItem = menuItemObject.GetComponent<MenuItem>();
+			menuItem.SetText("Move");
+			menuItem.name = menuItem.menuItemText.text;
+			menuItem.transform.localRotation = Quaternion.identity;
+			menuItem.transform.localPosition = Vector3.zero;
+			menuItem.transform.localScale = Vector3.one;
+			menuItem.SetMenuAction(moveAction);
+			menuItems.Add(menuItem);
+		}
 		
 		//menuAction = new MenuEndTurnAction();
 		MenuEndTurnAction endTurnAction = new MenuEndTurnAction();

@@ -42,13 +42,26 @@ public class AIDirector : MonoBehaviour {
 	}
 
 	void Finish() {		
-		GameObject objToSpawn = new GameObject("BattleOrderEnactor Action");
-		objToSpawn.AddComponent<BattleOrderEnactor>();
-		objToSpawn.GetComponent<BattleOrderEnactor>().battleStateTracker.previous = this.battleStateTracker;
-		objToSpawn.GetComponent<BattleOrderEnactor>().Enact(calc.BattleOrder);
-		Debug.Log("enacting... " + calc.BattleOrder);
-		
+		if ("endturn".Equals(calc.BattleOrder.Action)) {
+			GameObject enactor = new GameObject("BattleOrderEnactor Action");
+			enactor.AddComponent<BattleOrderEnactor>();
+			enactor.GetComponent<BattleOrderEnactor>().battleStateTracker.previous = this.battleStateTracker;
+			enactor.GetComponent<BattleOrderEnactor>().Enact(calc.BattleOrder);
+			return;
+		}
+		GameObject objToSpawn = new GameObject("OrderConfirm Action");
+		objToSpawn.AddComponent<OrderConfirmation>();
+		objToSpawn.GetComponent<OrderConfirmation>().battleStateTracker.previous = this.battleStateTracker;
+		objToSpawn.GetComponent<OrderConfirmation>().SetBattleOrder(calc.BattleOrder, true);
 		this.gameObject.SetActive(false);
+
+		//GameObject objToSpawn = new GameObject("BattleOrderEnactor Action");
+		//objToSpawn.AddComponent<BattleOrderEnactor>();
+		//objToSpawn.GetComponent<BattleOrderEnactor>().battleStateTracker.previous = this.battleStateTracker;
+		//objToSpawn.GetComponent<BattleOrderEnactor>().Enact(calc.BattleOrder);
+		//Debug.Log("enacting... " + calc.BattleOrder);
+		
+		//this.gameObject.SetActive(false);
 	}
 
 	void EnablePane() {

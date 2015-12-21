@@ -15,6 +15,7 @@ public class Combatant : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		this.Stats = new CombatantStats();
+		this.Stats.Name = name;
 		this.TeamId = 0;
 		map = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
 		animator = GetComponent<Animator>();
