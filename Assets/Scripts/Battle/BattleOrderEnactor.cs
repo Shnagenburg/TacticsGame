@@ -95,6 +95,7 @@ public class BattleOrderEnactor : MonoBehaviour {
 		objToSpawn.SetActive(true);
 		objToSpawn.GetComponent<DamageNumber>().SetNumber(damage);
 		objToSpawn.transform.position = targetCombatant.transform.position + new Vector3(0, 1, 0);
+		objToSpawn.transform.rotation = Camera.current.transform.rotation;
 		maxTimer = objToSpawn.GetComponent<DamageNumber>().duration;
 	}
 
