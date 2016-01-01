@@ -24,7 +24,10 @@ public class TileUtility {
 
 			tiles.RemoveAll((TileData obj) => obj.OccupiedTeam != -1);
 		} else {
+			Debug.Log("xx " + tiles.Count + ", filter on " + teamId);
+			tiles.ForEach(t => Debug.Log("ttt: " + t.ToString()));
 			tiles.RemoveAll((TileData obj) => obj.OccupiedTeam == teamId);
+			Debug.Log("xxx " + tiles.Count);
 		}
 		return tiles;
 	}

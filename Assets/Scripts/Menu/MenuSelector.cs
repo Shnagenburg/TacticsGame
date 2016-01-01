@@ -54,7 +54,7 @@ public class MenuSelector : MonoBehaviour {
 		if (!Input.GetButton ("Jump")) {
 			canSelect = true;
 		}
-		Debug.Log("cs: " + currentSelection.name);
+		//Debug.Log("cs: " + currentSelection.name);
 		
 	}
 	

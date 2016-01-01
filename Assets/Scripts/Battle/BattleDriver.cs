@@ -24,9 +24,6 @@ public class BattleDriver : MonoBehaviour {
 		int i = 0;
 		foreach (GameObject obj in combatObjects) {
 			combatants.Add(obj.GetComponent<Combatant>());			
-			Tile currentTile = map.TileMap.GetMap()[i*2, i*2];
-			currentTile.SetOccupant(obj.GetComponent<Combatant>());
-			i++;
 		}
 		for (int j = 0; j < combatants.Count; j++) {
 			if (j % 2 == 0) {
@@ -34,6 +31,8 @@ public class BattleDriver : MonoBehaviour {
 			} else {
 				combatants[j].TeamId = TeamId.PlayerTeam;
 			}
+			Tile currentTile = map.TileMap.GetMap()[j*2, j*2];
+			currentTile.SetOccupant(combatants[j]);
 		}
 		NextTurn();
 	}

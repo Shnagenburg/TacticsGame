@@ -26,190 +26,124 @@ public class ThreadedCalculateAIOrder {
 	}
 
 	public void Calculate() {
-		//List<Combatant> targets = BattleDriver.CurrentBattleDriver.Combatants;
-		//targets = targets.Where(t => t.TeamId == TeamId.PlayerTeam).ToList();
-		//targetToDistance = targets.ToDictionary(t => t, t => TilesAway(combatant, t));
-		//KeyValuePair<Combatant, int> nearestTarget = targetToDistance.OrderBy(kp => kp.Value).ToList()[0];
-
-		int movement = combatant.Stats.Movement;
-		if (!combatant.Stats.TurnStats.CanMove() && combatant.Stats.TurnStats.CanAttack()) {
-			KeyValuePair<Combatant, TileData> preferredTarget = FindTargetInRangeToAttack();
-
-			if (preferredTarget.Key != null) {
-				Debug.Log("att");
-				// attack player	
-				BattleOrder = new BattleOrder();
-				BattleOrder.SourceCombatant = combatant;
-				BattleOrder.Action = "attack";
-				BattleOrder.TargetTile = preferredTarget.Key.Tile;
-			} else {
-				Debug.Log("end");
-				// nothing to do	
-				BattleOrder = new BattleOrder();
-				BattleOrder.SourceCombatant = combatant;
-				BattleOrder.Action = "endturn";
-			}
-			isDone = true;
-
-			return;
+		Debug.Log("Creating AI Order...");
+		if (!combatant.Stats.TurnStats.HasAITurnPlan() ) {
+			Debug.Log("Creating turn plan...");
+			combatant.Stats.TurnStats.AITurnPlan = CreateTurnPlan();
+			combatant.Stats.TurnStats.AITurnPlan.map = map;			
+			Debug.Log("finished creating turn plan: " + combatant.Stats.TurnStats.AITurnPlan.TurnPlan);
 		}
-		KeyValuePair<Combatant, TileData> nearestTarget = FindClosetTargetToAttack();
-		Combatant target = nearestTarget.Key;
-		TileData destination = nearestTarget.Value;
-		if (target != null && destination != null) {
-			// Move to player
-			Debug.Log("sp between " + combatant.Tile.LocationString() + " " + destination.Tile.LocationString());
+		Debug.Log("Onto exection of plan...");
 
-			//List<Tile> path = map.GetShortestPath(combatant.Tile, nearestTarget.Key.Tile);			
-			List<TileData> path = map.GetShortestPathThreadsafe(combatant.Tile.TileData, destination, TeamId.PlayerTeam);
-			Debug.Log("done!");
-
-			BattleOrder = new BattleOrder();
-			BattleOrder.SourceCombatant = combatant;
-			BattleOrder.Action = "move";
-
-			// TODO figure out how far along the path guy can go
-			// If we can make the whole trek
-			if (path.Count <= movement) {
-				BattleOrder.TargetTile = path[path.Count - 1].Tile;				
-			} else {
-				// If for some reason we cannot, or go as far as you can
-				BattleOrder.TargetTile = path[movement].Tile;		
-			}
-
-		} else if (target != null && destination == null) {
-			// attack player	
-			BattleOrder = new BattleOrder();
-			BattleOrder.SourceCombatant = combatant;
-			BattleOrder.Action = "attack";
-			BattleOrder.TargetTile = target.Tile;
-
-		} else if (target == null && destination == null) {
-			BattleOrder = new BattleOrder();
-			BattleOrder.SourceCombatant = combatant;
-			BattleOrder.Action = "endturn";
-		} else {
-			// attack player	
-			BattleOrder = new BattleOrder();
-			BattleOrder.SourceCombatant = combatant;
-			BattleOrder.Action = "attack";
-			BattleOrder.TargetTile = nearestTarget.Key.Tile;
-		}
-
+		// Execute Plan
+		this.BattleOrder = combatant.Stats.TurnStats.AITurnPlan.CreateNextBattleOrder();
 		isDone = true;
-
 	}
 
-	private KeyValuePair<Combatant, TileData> FindClosetTargetToAttack() {
+	private Dictionary<Combatant, TileData> FindTargetsInMoveRangeToAttack() {
 		int movement = combatant.Stats.Movement;
 		TileData sourceTileData = combatant.Tile.TileData;
-		// TODO process:
-		// Find all enemies guys
 		List<Combatant> targets = BattleDriver.CurrentBattleDriver.Combatants;
 		targets = targets.Where(t => t.TeamId == TeamId.PlayerTeam).ToList();
-
+		
 		List<Combatant> reachableCombatants = new List<Combatant>();
-		Dictionary<Combatant, List<TileData>> combatantToAdjacentTiles = new Dictionary<Combatant, List<TileData>>();
+		Dictionary<Combatant, TileData> combatantToAdjacentTile = new Dictionary<Combatant, TileData>();
 		foreach (Combatant target in targets) {
 			// Find all adjacent unoccupied tiles to these bad guys
 			List<TileData> adjacent = map.TileMap.GetNeighbors(target.Tile.TileData);
 			adjacent = adjacent.Where(t => t.OccupiedTeam == TeamId.NoOccupant).ToList();
 			
 			// Figure out all options we can get to in this turn
-			List<TileData> reachableTiles = adjacent.Where(t => TilesAway(sourceTileData, t) <= movement).ToList();
+			List<TileData> reachableTiles = adjacent.Where(t => TilesAway(sourceTileData, t) <= movement)
+				.OrderBy(t => TilesAway(sourceTileData, t)).ToList();
 			if (reachableTiles.Count > 0) {
-				reachableCombatants.Add(target);
-			}
-			if (adjacent.Count > 0) {
-				combatantToAdjacentTiles.Add(target, adjacent);
+				// TODO check if there is a valid path to these tiles
+				combatantToAdjacentTile.Add(target, reachableTiles[0]);
 			}
 		}
-
-		if (combatantToAdjacentTiles.Count == 0) {
-			Debug.Log("AI couldn't find anyone they could reach");
-			return new KeyValuePair<Combatant, TileData>(null, null);
-		}
-		Combatant primeTarget = null;
-		// figure out who we want to hit (lowest hp)
-		foreach (Combatant target in reachableCombatants) {
-		    if (primeTarget == null) {
-				primeTarget = target;
-			} else if (primeTarget.Stats.CurrentHealth > target.Stats.CurrentHealth) {
-				primeTarget = target;
-			}
-		}
-		// If we found someone we can hit this turn, go hit them.
-		if (primeTarget != null) {
-			Debug.Log("AI can reach this turn to attack: " + primeTarget.Stats.Name);
-			TileData closetAdjacentTile = combatantToAdjacentTiles[primeTarget].OrderBy(t => TilesAway(sourceTileData, t)).ToList()[0];
-
-			// If we don't need to move
-			if (closetAdjacentTile == sourceTileData) {
-				return new KeyValuePair<Combatant, TileData>(primeTarget, null);
-			} else { 
-				return new KeyValuePair<Combatant, TileData>(primeTarget, closetAdjacentTile);
-			}
-		} else {
-			Debug.Log("AI couldn't find any reachable targets this turn");
-			
-			Combatant alternateTarget = null;
-			// figure out who we want to hit (lowest hp)
-			foreach (Combatant target in combatantToAdjacentTiles.Keys) {
-				if (alternateTarget == null) {
-					alternateTarget = target;
-				} else if (alternateTarget.Stats.CurrentHealth > target.Stats.CurrentHealth) {
-					alternateTarget = target;
-				}
-			}
-			TileData closetAdjacentTile = combatantToAdjacentTiles[alternateTarget].OrderBy(t => TilesAway(sourceTileData, t)).ToList()[0];
-			// If we don't need to move
-			if (closetAdjacentTile == sourceTileData) {
-				return new KeyValuePair<Combatant, TileData>(alternateTarget, null);
-			} else { 
-				return new KeyValuePair<Combatant, TileData>(alternateTarget, closetAdjacentTile);
-			}
-		}
-
-		//targets.ForEach(t => map.TileMap.AddNeighbors(t.Tile.TileData, validTilesToStandOn)); // fixup, track neighbor sets
-
-		// move into the closest space to hit said person
-
-		// return this closet space and the person we want to hit
-
-		//targetToDistance = targets.ToDictionary(t => t, t => TilesAway(combatant, t));
-
-		//KeyValuePair<Combatant, int> nearestTarget = targetToDistance.OrderBy(kp => kp.Value).ToList()[0];
-
-		//return nearestTarget;
-		// TODO::future if adjacent ally, perhaps move further away to allow ally to get close?
+		return combatantToAdjacentTile;
 	}
 
-	private KeyValuePair<Combatant, TileData> FindTargetInRangeToAttack() {
+	private Dictionary<Combatant, TileData> FindTargetsByClosest() {
 		int movement = combatant.Stats.Movement;
 		TileData sourceTileData = combatant.Tile.TileData;
-
-		// Find all enemies guys
 		List<Combatant> targets = BattleDriver.CurrentBattleDriver.Combatants;
 		targets = targets.Where(t => t.TeamId == TeamId.PlayerTeam).ToList();
-		Debug.Log("targets: " + targets.Count);
-
+		
 		List<Combatant> reachableCombatants = new List<Combatant>();
-		reachableCombatants = targets.Where(t => combatant.Stats.IsInAttackRange(sourceTileData, t.Tile.TileData)).ToList();
-		Debug.Log("reachable: " + reachableCombatants.Count);
+		Dictionary<Combatant, TileData> combatantToAdjacentTile = new Dictionary<Combatant, TileData>();
+		foreach (Combatant target in targets) {
+			// Find all adjacent unoccupied tiles to these bad guys
+			List<TileData> adjacent = map.TileMap.GetNeighbors(target.Tile.TileData);
+			adjacent = adjacent.Where(t => t.OccupiedTeam == TeamId.NoOccupant).ToList();
+			
+			// Figure out all options we can get to in this turn
+			List<TileData> reachableTiles = adjacent.OrderBy(t => TilesAway(sourceTileData, t)).ToList();
+			if (reachableTiles.Count > 0) {
+				// TODO check if there is a valid path to these tiles
+				combatantToAdjacentTile.Add(target, reachableTiles[0]);
+			}
+		}
+		return combatantToAdjacentTile;
+	}
+
+	private Combatant FindBestTargetToHit(List<Combatant> targets) {
 		Combatant primeTarget = null;
 		// figure out who we want to hit (lowest hp)
-		foreach (Combatant target in reachableCombatants) {
+		foreach (Combatant target in targets) {
 			if (primeTarget == null) {
 				primeTarget = target;
 			} else if (primeTarget.Stats.CurrentHealth > target.Stats.CurrentHealth) {
 				primeTarget = target;
 			}
 		}
-		TileData targetTileData = null;
-		if (primeTarget != null) {
-			targetTileData = primeTarget.Tile.TileData; 
+		return primeTarget;
+	}
+
+	private AITurnPlan CreateTurnPlan() {
+		TileData sourceTileData = combatant.Tile.TileData;
+		AITurnPlan result = new AITurnPlan(combatant);
+		// Formulate Plan
+		
+		// Can we hit anyone without moving? If so, mark them for attack
+		// Then if possible, retreat backwards
+		List<Combatant> targets = BattleDriver.CurrentBattleDriver.Combatants;
+		targets = targets.Where(t => t.TeamId == TeamId.PlayerTeam) //
+			.Where(t => combatant.Stats.IsInAttackRange(sourceTileData, t.Tile.TileData)).ToList();
+		if (targets.Count > 0) {
+			Combatant preferredTarget = FindBestTargetToHit(targets);
+			return result.AttackAndEndTurn(preferredTarget.Tile.TileData); // TODO change to attack and back off
 		}
-		return new KeyValuePair<Combatant, TileData>(primeTarget, targetTileData);
+		
+		// Can we hit anyone this turn by moving? If so, mark them as our target and move
+		Dictionary<Combatant, TileData> targetToTiledata = FindTargetsInMoveRangeToAttack();
+		if (targetToTiledata.Count > 0) {
+			Combatant preferredCloseTarget = FindBestTargetToHit(targetToTiledata.Keys.ToList());
+			return result.MoveAndAttack(preferredCloseTarget.Tile.TileData, targetToTiledata[preferredCloseTarget]);
+		}				
+
+		// Who is the closest target we can't reach? Move towards them and end turn
+		targetToTiledata = FindTargetsByClosest();
+		if (targetToTiledata.Count > 0) {
+			Combatant preferredCloseTarget = FindBestTargetToHit(targetToTiledata.Keys.ToList());
+			// TODO check if path exists
+			List<TileData> path = map.GetShortestPathThreadsafe(combatant.Tile.TileData, 
+			                                                    targetToTiledata[preferredCloseTarget], TeamId.PlayerTeam);
+			TileData destination = null;
+			// Find how far along the path we can move
+			for (int i = combatant.Stats.Movement; i > 0; i--) {
+				if (path[i].OccupiedTeam == TeamId.NoOccupant) {
+					destination = path[i];
+					break;
+				}
+			}
+			if (destination != null) {
+				return result.MoveAndEndTurn(destination);
+			}
+		}
+
+		// Nothing we can do
+		return result.EndTurn();
 	}
 
 	private int TilesAway(Combatant source, Combatant target) {
